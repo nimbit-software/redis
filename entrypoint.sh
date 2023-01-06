@@ -88,13 +88,18 @@ external_config() {
     echo "include ${EXTERNAL_CONFIG_FILE}" >> /etc/redis/redis.conf
 }
 
+build_modules_cmd() {
+    echo " --loadmodule /usr/lib/redis/modules/redistimeseries.so --loadmodule /usr/lib/redis/modules/rejson.so --loadmodule /usr/lib/redis/modules/research.so"
+}
+
 start_redis() {
+    MODULES_CMD = $(build_modules_cmd)
     if [[ "${SETUP_MODE}" == "cluster" ]]; then
         echo "Starting redis service in cluster mode....."
         if [[ "${REDIS_MAJOR_VERSION}" != "v7" ]]; then
-          redis-server /etc/redis/redis.conf --cluster-announce-ip "${POD_IP}"
+          redis-server /etc/redis/redis.conf --cluster-announce-ip "${POD_IP}" $MODULES_CMD
         else
-          redis-server /etc/redis/redis.conf
+          redis-server /etc/redis/redis.conf $MODULES_CMD
         fi
     else
         echo "Starting redis service in standalone mode....."
